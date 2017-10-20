@@ -10,6 +10,11 @@ import {
 } from 'react-native'
 
 const HEIGHT = Dimensions.get('window').height
+const DEFAULT_ANIMATION_INTERVAL = 200;
+const DEFAULT_SCROLL_MAX_CHANGE = 50;
+const DEFAULT_CONTENT_INSET = {
+  top: 0,
+};
 
 class Row extends React.Component {
   constructor(props) {
@@ -300,10 +305,12 @@ class SortableListView extends React.Component {
 
   scrollAnimation = () => {
     if (this.state.active) {
+      const animationInterval = this.props.animationInterval || DEFAULT_ANIMATION_INTERVAL;
       if (this.moveY === undefined) {
-        return requestAnimationFrame(this.scrollAnimation)
+        return setTimeout(this.scrollAnimation, animationInterval);
       }
 
+      const contentInset = this.props.contentInset || DEFAULT_CONTENT_INSET;
       const SCROLL_OFFSET = this.wrapperLayout.pageY
       const moveY = this.moveY - SCROLL_OFFSET
       const SCROLL_LOWER_BOUND = 80
@@ -311,16 +318,16 @@ class SortableListView extends React.Component {
       const NORMAL_SCROLL_MAX =
         this.scrollContainerHeight - this.listLayout.height
       const MAX_SCROLL_VALUE =
-        NORMAL_SCROLL_MAX + this.state.active.layout.frameHeight * 2
+        NORMAL_SCROLL_MAX + this.state.active.layout.frameHeight
       const currentScrollValue = this.scrollValue
       let newScrollValue = null
-      const SCROLL_MAX_CHANGE = 20
+      const SCROLL_MAX_CHANGE = this.props.scrollMaxChange || DEFAULT_SCROLL_MAX_CHANGE;
 
-      if (moveY < SCROLL_LOWER_BOUND && currentScrollValue > 0) {
-        const PERCENTAGE_CHANGE = 1 - moveY / SCROLL_LOWER_BOUND
+      if (moveY < SCROLL_LOWER_BOUND && currentScrollValue > -contentInset.top) {
+        const PERCENTAGE_CHANGE = 1 - (moveY - contentInset.top) / SCROLL_LOWER_BOUND
         newScrollValue =
           currentScrollValue - PERCENTAGE_CHANGE * SCROLL_MAX_CHANGE
-        if (newScrollValue < 0) newScrollValue = 0
+        if (newScrollValue < -contentInset.top) newScrollValue = -contentInset.top;
       }
       if (
         moveY > SCROLL_HIGHER_BOUND &&
@@ -337,7 +344,7 @@ class SortableListView extends React.Component {
         this.scrollTo({ y: this.scrollValue })
       }
       this.moved && this.checkTargetElement()
-      requestAnimationFrame(this.scrollAnimation)
+      setTimeout(this.scrollAnimation, animationInterval);
     }
   }
 
