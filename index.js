@@ -6,7 +6,6 @@ import {
   Dimensions,
   PanResponder,
   LayoutAnimation,
-  InteractionManager,
 } from 'react-native'
 
 const HEIGHT = Dimensions.get('window').height
@@ -456,9 +455,7 @@ class SortableListView extends React.Component {
   }
 
   componentDidMount() {
-    InteractionManager.runAfterInteractions(() => {
-      this.timer = setTimeout(this.measureWrapper, 0)
-    })
+    this.measureWrapper();
   }
 
   componentWillReceiveProps(props) {
