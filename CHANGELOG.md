@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [Unreleased]
+### Added
+- Adapting for web, by neutralizing LayoutAnimation (#145)
+
+## [0.2.8] - 2018-02-01
+### Fixed
+- handleLongPress doesn't exist anymore (#138)
+
+## [0.2.7] - 2017-12-14
+### Added
+- Prop to moveOnPressIn. LongPress delay is eliminated if moveOnPressIn is true.
+- Prop to ListViewComponent. A custom ListView component to be used instead of React-Native's ListView.
+- Prop to disableAnimatedScrolling. Disable animation when scrolling.
+
 ## [0.2.6] - 2017-09-14
 ### Fixed
 - Issue #101

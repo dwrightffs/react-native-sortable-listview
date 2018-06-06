@@ -31,7 +31,8 @@ class Row extends React.Component {
     return false
   }
 
-  handleLongPress = e => {
+  handlePress = e => {
+    if (!this.refs.view) return
     this.refs.view.measure(
       (frameX, frameY, frameWidth, frameHeight, pageX, pageY) => {
         const layout = { frameHeight, pageY }
@@ -54,6 +55,7 @@ class Row extends React.Component {
   }
 
   measure = (...args) => {
+    if (!this.refs.view) return
     this.refs.view.measure(...args)
   }
 
@@ -72,10 +74,12 @@ class Row extends React.Component {
       ),
       {
         sortHandlers: {
-          onLongPress: this.handleLongPress,
+          onLongPress: !this.props.moveOnPressIn ? this.handlePress : null,
+          onPressIn: this.props.moveOnPressIn ? this.handlePress : null,
           onPressOut: this.props.list.cancel,
         },
-        onLongPress: this.handleLongPress,
+        onLongPress: !this.props.moveOnPressIn ? this.handlePress : null,
+        onPressIn: this.props.moveOnPressIn ? this.handlePress : null,
         onPressOut: this.props.list.cancel,
       }
     )
@@ -229,7 +233,7 @@ class SortableListView extends React.Component {
         props.onRowMoved && props.onRowMoved(args)
         if (props._legacySupport) {
           // rely on parent data changes to set state changes
-          // LayoutAnimation.easeInEaseOut()
+          // LayoutAnimation && LayoutAnimation.easeInEaseOut()
           this.state.active = false
           this.state.hovering = false
         } else {
@@ -340,7 +344,10 @@ class SortableListView extends React.Component {
       }
       if (newScrollValue !== null && !this.props.limitScrolling) {
         this.scrollValue = newScrollValue
-        this.scrollTo({ y: this.scrollValue })
+        this.scrollTo({
+          y: this.scrollValue,
+          animated: !this.props.disableAnimatedScrolling,
+        })
       }
       this.moved && this.checkTargetElement()
       setTimeout(this.scrollAnimation, animationInterval);
@@ -374,7 +381,8 @@ class SortableListView extends React.Component {
     if (!isLast) i--
 
     if (String(i) !== this.state.hovering && i >= 0) {
-      LayoutAnimation.easeInEaseOut()
+      // LayoutAnimation is not supported in react-native-web
+      LayoutAnimation && LayoutAnimation.easeInEaseOut()
       this._previouslyHovering = this.state.hovering
       this.__activeY = this.panY
       this.setState({
@@ -386,7 +394,8 @@ class SortableListView extends React.Component {
   handleRowActive = row => {
     if (this.props.disableSorting) return
     this.state.pan.setValue({ x: 0, y: 0 })
-    LayoutAnimation.easeInEaseOut()
+    // LayoutAnimation is not supported in react-native-web
+    LayoutAnimation && LayoutAnimation.easeInEaseOut()
     this.moveY = row.layout.pageY + row.layout.frameHeight / 2
     this.setState(
       {
@@ -479,9 +488,11 @@ class SortableListView extends React.Component {
     const scrollEnabled =
       !this.state.active && this.props.scrollEnabled !== false
 
+    const ListViewComponent = this.props.ListViewComponent || ListView
+
     return (
       <View ref="wrapper" style={{ flex: 1 }} collapsable={false}>
-        <ListView
+        <ListViewComponent
           enableEmptySections
           {...this.props}
           {...this.state.panResponder.panHandlers}
@@ -499,10 +510,12 @@ class SortableListView extends React.Component {
   }
 
   scrollTo = (...args) => {
+    if (!this.refs.list) return
     this.refs.list.scrollTo(...args)
   }
 
   getScrollResponder = () => {
+    if (!this.refs.list) return
     this.refs.list.getScrollResponder()
   }
 }
